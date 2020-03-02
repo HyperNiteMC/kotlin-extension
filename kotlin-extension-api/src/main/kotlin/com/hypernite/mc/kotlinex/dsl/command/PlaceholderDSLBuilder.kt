@@ -19,11 +19,12 @@ class PlaceholderDSLBuilder : Buildable<Map<String, KClass<*>>> {
 
     operator fun CommandElement.unaryMinus() {
         map[this.label] = this.type
-        property[this.label] = Property()
+        property[this.label] ?: Property().also { property[this.label] = it }
     }
 
     fun CommandElement.optional(): CommandElement {
-        property[this.label]?.optional = true
+        val p = property[this.label] ?: Property().also { property[this.label] = it }
+        p.optional = true
         return this
     }
 
@@ -38,8 +39,12 @@ class PlaceholderDSLBuilder : Buildable<Map<String, KClass<*>>> {
     val toPlaceholders: List<String>
         get() = map.entries.flatMap {
             (if (it.value == Joined::class) arrayOf(it.key) else KCore.argumentParser.getPlaceholders(it.value)).map { s ->
-                val p = property[it.key] ?: return@map s
-                return@map if (p.optional) if (s == it.key) "[$s]" else "<$s:${it.key}>" else if (s == it.key) "<$s>" else "<$s:${it.key}>"
+                val optional = property[it.key]?.optional ?: false
+                if (optional) {
+                    if (s == it.key) "[$s]" else "[$s:${it.key}]"
+                } else {
+                    if (s == it.key) "<$s>" else "<$s:${it.key}>"
+                }
             }.toList()
         }
 

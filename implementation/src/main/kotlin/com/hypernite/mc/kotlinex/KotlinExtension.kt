@@ -109,13 +109,6 @@ class KotlinExtension : JavaPlugin() {
             val z = Double::class.tryParse(args, sender)
             Vector(x, y, z)
         }
-        registerParsing(arrayOf("message")) { args, _ ->
-            val list = mutableListOf<String>()
-            while (args.hasNext()) {
-                list += args.next()
-            }
-            list
-        }
         registerParsing(arrayOf("string")) { args, _ -> args.next() }
     }
 
