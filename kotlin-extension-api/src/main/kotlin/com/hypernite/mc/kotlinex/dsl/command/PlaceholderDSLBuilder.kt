@@ -35,7 +35,7 @@ class PlaceholderDSLBuilder : Buildable<Map<String, KClass<*>>> {
         get() = map.entries.flatMap {
             KCore.argumentParser.getPlaceholders(it.value).map { s ->
                 val p = property[it.key] ?: return@map s
-                return@map if (p.optional) "[$s]" else "<$s>"
+                return@map if (p.optional) "[$s: ${it.key}]" else "<$s: ${it.key}>"
             }.toList()
         }
 

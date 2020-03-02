@@ -17,18 +17,31 @@ object ArgumentParserImpl : ArgumentParser {
 
     override fun <T : Any> tryParse(cls: KClass<T>, args: Iterator<String>, sender: CommandSender): T {
         val carg = CommandArgs(args)
-        val pair = map[cls] ?: throw carg.throwError("尚未註冊 $cls 的轉換器")
+        val pair = map[cls] ?: let {
+            if (cls.java.isEnum) {
+                return cls.java.enumConstants.find { c -> (c as Enum<*>).name == args.next().toUpperCase() }
+                        ?: carg.throwError("未知的變數，可用變數: ${cls.java.enumConstants.joinToString(", ")}")
+            } else {
+                carg.throwError("尚未註冊 $cls 的轉換器")
+            }
+        }
         val parse = pair.second
         val arg = mutableListOf<String>()
         for (i in pair.first.indices) {
-            if (!args.hasNext()) throw carg.throwError("參數過少。")
+            if (!args.hasNext()) carg.throwError("參數過少。")
             arg += args.next()
         }
         val o = parse(CommandArgs(arg.iterator()), sender)
-        return cls.safeCast(o) ?: throw carg.throwError("形態轉換失敗。")
+        return cls.safeCast(o) ?: carg.throwError("形態轉換失敗。")
     }
 
     override fun getPlaceholders(cls: KClass<out Any>): Array<String> {
-        return map[cls]?.first ?: throw IllegalStateException("尚未註冊 $cls 的轉換器")
+        return map[cls]?.first ?: let {
+            if (cls.java.isEnum) {
+                arrayOf(cls.java.enumConstants.joinString("|"))
+            } else {
+                throw IllegalStateException("尚未註冊 $cls 的轉換器")
+            }
+        }
     }
 }

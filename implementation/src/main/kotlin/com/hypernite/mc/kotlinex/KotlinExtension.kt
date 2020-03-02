@@ -37,7 +37,7 @@ class KotlinExtension : JavaPlugin() {
             try {
                 ctx.toInt()
             } catch (e: NumberFormatException) {
-                throw args.throwError("$ctx 並不是有效的數字")
+                args.throwError("$ctx 並不是有效的數字")
             }
         }
         parser.registerParser(Double::class, arrayOf("double")) { args, _ ->
@@ -45,7 +45,7 @@ class KotlinExtension : JavaPlugin() {
             try {
                 ctx.toDouble()
             } catch (e: NumberFormatException) {
-                throw args.throwError("$ctx 並不是有效的數字")
+                args.throwError("$ctx 並不是有效的數字")
             }
         }
         parser.registerParser(Float::class, arrayOf("float")) { args, _ ->
@@ -53,40 +53,40 @@ class KotlinExtension : JavaPlugin() {
             try {
                 ctx.toFloat()
             } catch (e: NumberFormatException) {
-                throw args.throwError("$ctx 並不是有效的浮點數")
+                args.throwError("$ctx 並不是有效的浮點數")
             }
         }
         parser.registerParser(Boolean::class, arrayOf("bool")) { args, _ -> args.next().toBoolean() }
         parser.registerParser(Player::class, arrayOf("player")) { args, _ ->
             val ctx = args.next()
-            Bukkit.getPlayer(ctx) ?: throw args.throwError("找不到線上玩家 $ctx")
+            Bukkit.getPlayer(ctx) ?: args.throwError("找不到線上玩家 $ctx")
         }
         parser.registerParser(PlayerOrSource::class, arrayOf("player")) { args, sender ->
             val ctx = args.next()
             val p = Bukkit.getPlayer(ctx) ?: sender as? Player
-            val pp = p ?: throw args.throwError("you are not player and cannot find player $ctx")
+            val pp = p ?: args.throwError("you are not player and cannot find player $ctx")
             PlayerOrSource(pp)
         }
         parser.registerParser(OfflinePlayer::class, arrayOf("player")) { args, _ ->
             val ctx = args.next()
-            Bukkit.getPlayerUniqueId(ctx)?.let { Bukkit.getOfflinePlayer(it) } ?: throw args.throwError("找不到玩家 $ctx")
+            Bukkit.getPlayerUniqueId(ctx)?.let { Bukkit.getOfflinePlayer(it) } ?: args.throwError("找不到玩家 $ctx")
         }
         parser.registerParser(UserOrSource::class, arrayOf("player")) { args, sender ->
             val ctx = args.next()
             val p = Bukkit.getPlayerUniqueId(ctx)?.let { Bukkit.getOfflinePlayer(it) } ?: sender as? OfflinePlayer
-            val pp = p ?: throw args.throwError("you are not player and cannot find player $ctx")
+            val pp = p ?: args.throwError("you are not player and cannot find player $ctx")
             UserOrSource(pp)
         }
         parser.registerParser(World::class, arrayOf("world")) { args, _ ->
             val ctx = args.next()
-            Bukkit.getWorld(ctx) ?: throw args.throwError("找不到世界 $ctx")
+            Bukkit.getWorld(ctx) ?: args.throwError("找不到世界 $ctx")
         }
         parser.registerParser(World.Environment::class, arrayOf("environment")) { args, _ ->
             val ctx = args.next().toUpperCase()
             try {
                 World.Environment.valueOf(ctx)
             } catch (e: IllegalArgumentException) {
-                throw args.throwError("找不到世界類型 $ctx, 可用世界類型: ${World.Environment.values().joinString(", ")}")
+                args.throwError("找不到世界類型 $ctx, 可用世界類型: ${World.Environment.values().joinString(", ")}")
             }
         }
         parser.registerParser(Location::class, arrayOf("world", "x", "y", "z")) { args, sender ->
@@ -97,7 +97,7 @@ class KotlinExtension : JavaPlugin() {
             Location(world, x, y, z)
         }
         parser.registerParser(LocationSelf::class, arrayOf("x", "y", "z")) { args, sender ->
-            val player = sender as? Player ?: throw args.throwError("you are not player")
+            val player = sender as? Player ?: args.throwError("you are not player")
             val world = player.world
             val x = Double::class.tryParse(args, sender)
             val y = Double::class.tryParse(args, sender)
@@ -117,6 +117,7 @@ class KotlinExtension : JavaPlugin() {
             }
             Literal(list)
         }
+        parser.registerParser(String::class, arrayOf("string")) { args, _ -> args.next() }
     }
 
 

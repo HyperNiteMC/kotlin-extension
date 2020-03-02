@@ -5,8 +5,11 @@ import com.hypernite.mc.hnmc.core.main.HyperNiteMC
 import com.hypernite.mc.hnmc.core.misc.commands.CommandNode
 import net.md_5.bungee.api.ChatColor
 import net.md_5.bungee.api.chat.TextComponent
+import org.bukkit.Material
 import org.bukkit.command.CommandSender
+import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.scheduler.BukkitTask
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.Transaction
@@ -32,6 +35,26 @@ fun <T : Any> KClass<T>.tryParse(args: Iterator<String>, sender: CommandSender):
 
 fun CommandNode.registerAsMain(plugin: JavaPlugin) {
     HyperNiteMC.getAPI().commandRegister.registerCommand(plugin, this)
+}
+
+fun Material.item(amount: Int = 1): ItemStack = ItemStack(this, amount)
+
+fun schedule(async: Boolean = false,
+             delay: Long = 0,
+             unit: TimeUnit = TimeUnit.SECONDS,
+             callback: BukkitTask.() -> Unit): BukkitTask {
+    lateinit var task: BukkitTask
+    val delayS = unit.toSeconds(delay) * 20
+    val scheduler = HyperNiteMC.getAPI().coreSchelder
+    fun f() = task.callback()
+    return when {
+        delay > 0 -> {
+            if (async) scheduler.runTaskLater(::f, delayS)
+            else scheduler.runAsyncLater(::f, delayS)
+        }
+        async -> scheduler.runAsync(::f)
+        else -> scheduler.runTask(::f)
+    }
 }
 
 /*
@@ -60,9 +83,17 @@ fun String.format(vararg o: Any): String {
     return MessageFormat.format(this, o)
 }
 
+fun String?.translateColor(): String {
+    return ChatColor.translateAlternateColorCodes('&', this ?: "null")
+}
+
 val String.purified get() = toLowerCase().trim()
 
 infix fun String.match(other: String) = purified == other.purified
+
+fun String.color(color: ChatColor): String {
+    return "$color$this"
+}
 
 /*
  Date
