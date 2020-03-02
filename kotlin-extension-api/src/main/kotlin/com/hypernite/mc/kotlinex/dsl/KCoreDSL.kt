@@ -6,6 +6,7 @@ import com.hypernite.mc.kotlinex.dsl.inventory.InventoryDSLBuilder
 import com.hypernite.mc.kotlinex.dsl.itemstack.ItemDSLBuilder
 import com.hypernite.mc.kotlinex.dsl.listener.DSLEventListener
 import org.bukkit.Material
+import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.Plugin
 
@@ -20,8 +21,10 @@ fun listener(plugin: Plugin, setup: DSLEventListener.() -> Unit) {
     kotlinListener.setup()
 }
 
-fun createUI(title: String, row: Int = 6, setup: InventoryDSLBuilder.() -> Unit) {
-
+fun inventory(row: Int = 6, setup: InventoryDSLBuilder.() -> Unit): Inventory {
+    val inventoryBuilder = InventoryDSLBuilder(row)
+    inventoryBuilder.setup()
+    return inventoryBuilder.build()
 }
 
 fun command(name: String, setup: CommandDSLBuilder.() -> Unit): CommandNode {

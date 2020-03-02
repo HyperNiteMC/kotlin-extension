@@ -1,8 +1,10 @@
 import com.hypernite.mc.hnmc.core.main.HyperNiteMC
+import com.hypernite.mc.kotlinex.KCore
 import com.hypernite.mc.kotlinex.dsl.command
 import com.hypernite.mc.kotlinex.dsl.item
 import com.hypernite.mc.kotlinex.dsl.listener
 import com.hypernite.mc.kotlinex.forKotlin
+import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
@@ -16,6 +18,21 @@ import org.bukkit.plugin.java.JavaPlugin
 lateinit var plugin: JavaPlugin
 fun main() {
     val factory = HyperNiteMC.getAPI().factory.getConfigFactory(plugin).forKotlin
+    KCore.argumentParser.registerParser(Player::class, arrayOf("name")) { list, _ ->
+        Bukkit.getPlayer(list.next()) ?: throw list.throwError("player not online")
+    }
+    KCore.argumentParser.registerParser(Location::class, arrayOf("x", "y", "z")) { args, sender ->
+        val player = sender as? Player ?: throw args.throwError("error")
+        val world = player.world
+        try {
+            val x = args.next().toDouble()
+            val y = args.next().toDouble()
+            val z = args.next().toDouble()
+            Location(world, x, y, z)
+        } catch (e: NumberFormatException) {
+            throw args.throwError("not a valid number!, ${e.message}")
+        }
+    }
 }
 
 fun registerListener(){
@@ -38,14 +55,32 @@ fun commandRegister(){
         permission("test.use")
         description("test command")
         alias {
-            - "tester"
-            - "testing"
+            -"tester"
+            -"testing"
         }
         placeholder {
-            - cast<Player>("player")
-            - cast<Location>("loc")
+            -cast<Player>("player")
+            -cast<Location>("loc").optional()
         }
-        
+
+        tabComplete { commandSender, list ->
+            -"abc"
+            -commandSender.name
+            for (player in Bukkit.getOnlinePlayers()) {
+                -player.name
+            }
+            for (s in list) {
+                -s
+            }
+        }
+
+        execute {
+            val player: Player = this["player"]
+            val loc: Location? = getSafe("location")
+            sender.sendMessage("your player is ${player.displayName}")
+            player.sendMessage("your location world is ${loc?.world?.name ?: "null"}")
+            true
+        }
     }
 }
 

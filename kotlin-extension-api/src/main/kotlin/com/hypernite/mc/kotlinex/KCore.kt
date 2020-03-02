@@ -1,12 +1,17 @@
 package com.hypernite.mc.kotlinex
 
 import com.hypernite.mc.hnmc.core.config.ConfigFactory
+import org.jetbrains.exposed.sql.Transaction
 
-internal object KCore : KCoreAPI {
+object KCore : KCoreAPI {
     override val argumentParser: ArgumentParser
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = throw Exception("trying to run API.jar into server")
 
     override fun forKotlin(factory: ConfigFactory): ConfigFactory {
+        throw Exception("trying to run API.jar into server")
+    }
+
+    override fun <T> transaction(t: Transaction.() -> T): T {
         throw Exception("trying to run API.jar into server")
     }
 }

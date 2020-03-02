@@ -1,0 +1,6 @@
+name: KotlinExtension
+main: com.hypernite.mc.kotlinex.KotlinExtension
+author: Eric Lam
+version: ${project.version}
+depend: [HyperNiteMC-Core]
+api-version: "1.15"

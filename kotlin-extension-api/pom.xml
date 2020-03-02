@@ -5,7 +5,7 @@
     <parent>
         <artifactId>kotlin-extension</artifactId>
         <groupId>com.hypernite.mc</groupId>
-        <version>1.0</version>
+        <version>1.0.5</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,10 +13,15 @@
 
 
     <dependencies>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib</artifactId>
-            <scope>provided</scope>
-        </dependency>
+
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

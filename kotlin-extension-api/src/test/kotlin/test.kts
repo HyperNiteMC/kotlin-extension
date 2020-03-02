@@ -1,25 +1,34 @@
-command("test") {
+creatUI("title", 6) {
 
-    permission("test.use")
-    description("test command")
-    alias("tester", "testing")
-
-    childs {
-        +command("say"){
-            permission("test.use.say")
-            description("test say command")
-
-            placeholders {
-                - cast<Player>("player")
-                - cast<Location>("location")
-            }
-
-            execute { sender, args ->
-                sender.sendMessage("you say ${args["player"]} is shit!")
-                sender.sendMessage("you are in ${args<Location>().world.name}")
-            }
+    fill {
+        item(Material.STONE) {
+            display = ""
         }
     }
 
+    +item(Material.PAPER) {
+        display = "this is a paper"
+    }
 
+    slot(3 row 6) {
+        item(Material.APPLE) {
+            display = "this is an apple"
+        }
+    }
+
+    slot(3 row 6, 6 row 4) {
+        item(Material.BREAD) {
+            display = "this is a bread"
+        }
+    }
+
+    fill(row = 1..3, column = 2..6) { item }
+
+    fillRow(row = 1..3) { item2 }
+
+    fillColumn(column = 2..6) { item3 }
+
+    ring(padding = 1) { item5 }
+
+    center { item6 }
 }
