@@ -22,7 +22,13 @@ class CommandDSLExecutor(
             val optional = properties[label]?.optional ?: true
             if (!args.hasNext() && optional) continue
             try {
-                parsed += label to cls.tryParse(args, sender)
+                parsed += label to if (cls == PlaceholderDSLBuilder.Joined::class) {
+                    val list = mutableListOf<String>()
+                    while (args.hasNext()) {
+                        list += args.next()
+                    }
+                    list
+                } else cls.tryParse(args, sender)
             } catch (e: NoSuchElementException) {
                 val msg = "有轉換器獲取了多餘的參數。($cls)"
                 throw CommandArgs.ArgumentParseException(msg)
@@ -42,6 +48,10 @@ class CommandDSLExecutor(
     inline fun <reified T : Any> List<String>.getAs(fromLast: Boolean = false): T? {
         val toParse = LinkedList(this)
         return T::class.tryParse(toParse.iterator(), sender)
+    }
+
+    fun joined(label: String): List<String> {
+        return parsed[label] as? List<String> ?: emptyList()
     }
 
     operator fun <T : Any> get(label: String): T {

@@ -16,11 +16,10 @@ object ArgumentParserImpl : ArgumentParser {
     }
 
     override fun <T : Any> tryParse(cls: KClass<T>, args: Iterator<String>, sender: CommandSender): T {
-        val carg = CommandArgs(args)
+        val carg = CommandArgs(listOf<String>().iterator())
         val pair = map[cls] ?: let {
             if (cls.java.isEnum) {
-                return cls.java.enumConstants.find { c -> (c as Enum<*>).name == args.next().toUpperCase() }
-                        ?: carg.throwError("未知的變數，可用變數: ${cls.java.enumConstants.joinToString(", ")}")
+                getPlaceholders(cls) to null
             } else {
                 carg.throwError("尚未註冊 $cls 的轉換器")
             }
@@ -28,17 +27,24 @@ object ArgumentParserImpl : ArgumentParser {
         val parse = pair.second
         val arg = mutableListOf<String>()
         for (i in pair.first.indices) {
-            if (!args.hasNext()) carg.throwError("參數過少。")
+            if (!args.hasNext()) carg.throwError("缺少參數: ${getPlaceholders(cls).drop(arg.size).joinToString { "<$it>" }}")
             arg += args.next()
         }
-        val o = parse(CommandArgs(arg.iterator()), sender)
+        val commandArg = CommandArgs(arg.iterator())
+        val o = parse?.invoke(commandArg, sender) ?: enumParse(cls, commandArg)
         return cls.safeCast(o) ?: carg.throwError("形態轉換失敗。")
+    }
+
+    private fun enumParse(cls: KClass<out Any>, args: CommandArgs): Any? {
+        val ctx = args.next().toUpperCase()
+        return cls.java.enumConstants.find { c -> (c as Enum<*>).name == ctx }
+                ?: args.throwError("未知的變數，可用變數: ${cls.java.enumConstants.joinToString(", ")}")
     }
 
     override fun getPlaceholders(cls: KClass<out Any>): Array<String> {
         return map[cls]?.first ?: let {
             if (cls.java.isEnum) {
-                arrayOf(cls.java.enumConstants.joinString("|"))
+                arrayOf(cls.java.enumConstants.joinToString(","))
             } else {
                 throw IllegalStateException("尚未註冊 $cls 的轉換器")
             }

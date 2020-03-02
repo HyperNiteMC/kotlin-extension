@@ -3,6 +3,7 @@ package com.hypernite.mc.kotlinex
 import com.hypernite.mc.hnmc.core.config.ConfigFactory
 import com.hypernite.mc.hnmc.core.main.HyperNiteMC
 import com.hypernite.mc.hnmc.core.misc.commands.CommandNode
+import com.hypernite.mc.kotlinex.dsl.command.CommandArgs
 import net.md_5.bungee.api.ChatColor
 import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Material
@@ -35,6 +36,10 @@ fun <T : Any> KClass<T>.tryParse(args: Iterator<String>, sender: CommandSender):
 
 fun CommandNode.registerAsMain(plugin: JavaPlugin) {
     HyperNiteMC.getAPI().commandRegister.registerCommand(plugin, this)
+}
+
+inline fun <reified T : Any> registerParsing(arr: Array<String>, noinline parse: (CommandArgs, CommandSender) -> T) {
+    KCore.argumentParser.registerParser(T::class, arr, parse)
 }
 
 fun Material.item(amount: Int = 1): ItemStack = ItemStack(this, amount)
