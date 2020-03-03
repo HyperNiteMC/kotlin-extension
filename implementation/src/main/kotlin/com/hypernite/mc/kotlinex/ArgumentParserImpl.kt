@@ -32,19 +32,27 @@ object ArgumentParserImpl : ArgumentParser {
         }
         val commandArg = CommandArgs(arg.iterator())
         val o = parse?.invoke(commandArg, sender) ?: enumParse(cls, commandArg)
-        return cls.safeCast(o) ?: carg.throwError("形態轉換失敗。")
+        return cls.safeCast(o) ?: carg.throwError("形態轉換失敗或參數為空值。")
     }
 
     private fun enumParse(cls: KClass<out Any>, args: CommandArgs): Any? {
         val ctx = args.next().toUpperCase()
         return cls.java.enumConstants.find { c -> (c as Enum<*>).name == ctx }
-                ?: args.throwError("未知的變數，可用變數: ${cls.java.enumConstants.joinToString(", ")}")
+                ?: let{
+                    val cs = cls.java.enumConstants
+                    val variables = if (cs.size > 20) {
+                        cs.take(20).joinToString(", ", postfix = "...")
+                    } else {
+                        cs.joinToString(", ")
+                    }
+                    args.throwError("未知的變數，可用變數: $variables")
+                }
     }
 
     override fun getPlaceholders(cls: KClass<out Any>): Array<String> {
         return map[cls]?.first ?: let {
             if (cls.java.isEnum) {
-                arrayOf(cls.java.enumConstants.joinToString(","))
+                arrayOf(cls.java.simpleName)
             } else {
                 throw IllegalStateException("尚未註冊 $cls 的轉換器")
             }

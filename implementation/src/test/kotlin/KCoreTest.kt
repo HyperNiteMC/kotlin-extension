@@ -19,10 +19,10 @@ lateinit var plugin: JavaPlugin
 fun main() {
     val factory = HyperNiteMC.getAPI().factory.getConfigFactory(plugin).forKotlin
     KCore.argumentParser.registerParser(Player::class, arrayOf("name")) { list, _ ->
-        Bukkit.getPlayer(list.next()) ?: throw list.throwError("player not online")
+        Bukkit.getPlayer(list.next()) ?: list.throwError("player not online")
     }
     KCore.argumentParser.registerParser(Location::class, arrayOf("x", "y", "z")) { args, sender ->
-        val player = sender as? Player ?: throw args.throwError("error")
+        val player = sender as? Player ?: args.throwError("error")
         val world = player.world
         try {
             val x = args.next().toDouble()
@@ -30,7 +30,7 @@ fun main() {
             val z = args.next().toDouble()
             Location(world, x, y, z)
         } catch (e: NumberFormatException) {
-            throw args.throwError("not a valid number!, ${e.message}")
+            args.throwError("not a valid number!, ${e.message}")
         }
     }
 }

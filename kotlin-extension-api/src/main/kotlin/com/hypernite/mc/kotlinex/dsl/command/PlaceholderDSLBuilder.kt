@@ -41,9 +41,9 @@ class PlaceholderDSLBuilder : Buildable<Map<String, KClass<*>>> {
             (if (it.value == Joined::class) arrayOf(it.key) else KCore.argumentParser.getPlaceholders(it.value)).map { s ->
                 val optional = property[it.key]?.optional ?: false
                 if (optional) {
-                    if (s == it.key) "[$s]" else "[$s:${it.key}]"
+                    if (s.equals(it.key, true)) "[${it.key}]" else "[$s:${it.key}]"
                 } else {
-                    if (s == it.key) "<$s>" else "<$s:${it.key}>"
+                    if (s.equals(it.key, true)) "<${it.key}>" else "<$s:${it.key}>"
                 }
             }.toList()
         }
