@@ -1,9 +1,7 @@
 package com.hypernite.mc.kotlinex
 
-import com.hypernite.mc.hnmc.core.config.ConfigBuilder
 import com.hypernite.mc.hnmc.core.config.ConfigFactory
 import com.hypernite.mc.hnmc.core.managers.SQLDataSource
-import org.apache.commons.lang.Validate
 import org.bukkit.plugin.java.JavaPlugin
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.StdOutSqlLogger
@@ -18,18 +16,25 @@ object KCore : KCoreAPI {
         get() = ArgumentParserImpl
 
     override fun forKotlin(factory: ConfigFactory): ConfigFactory {
-        val builder = factory as ConfigBuilder
-        val plugin = builder::class.java.getDeclaredField("plugin").let {
+        val plugin = factory::class.java.getDeclaredField("plugin").let {
             it.isAccessible = true
-            it.get(builder) as JavaPlugin
+            it.get(factory) as JavaPlugin
         }
         return KotlinConfigFactory(plugin)
     }
 
     override fun <T> transaction(t: Transaction.() -> T): T {
-        Validate.notNull(db, "SQLPool Database is null, maybe not initialized?")
+        if (!singlePoolEnabled) throw IllegalStateException("SQLPool Database is null, maybe not initialized?")
         return org.jetbrains.exposed.sql.transactions.transaction(db, t)
     }
+
+    override fun <T> asyncTransaction(t: Transaction.() -> T): AsyncInvoker<T> {
+        if (!singlePoolEnabled) throw IllegalStateException("SQLPool Database is null, maybe not initialized?")
+        return AsyncPromise(t)
+    }
+
+    override val singlePoolEnabled: Boolean
+        get() = this::db.isInitialized
 
     internal fun setupMySQL(sql: SQLDataSource) {
         sql.dataSource ?: throw IllegalStateException("DataSource has not initialized")

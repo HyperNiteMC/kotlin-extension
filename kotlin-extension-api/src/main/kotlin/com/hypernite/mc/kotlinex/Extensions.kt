@@ -42,6 +42,10 @@ inline fun <reified T : Any> registerParsing(arr: Array<String>, noinline parse:
     KCore.argumentParser.registerParser(T::class, arr, parse)
 }
 
+fun <R> asyncTransaction(run: () -> R) {
+    KCore.transaction { }
+}
+
 fun Material.item(amount: Int = 1): ItemStack = ItemStack(this, amount)
 
 fun schedule(async: Boolean = false,
@@ -50,9 +54,9 @@ fun schedule(async: Boolean = false,
              callback: BukkitTask.() -> Unit): BukkitTask {
     lateinit var task: BukkitTask
     val delayS = unit.toSeconds(delay) * 20
-    val scheduler = HyperNiteMC.getAPI().coreSchelder
+    val scheduler = HyperNiteMC.getAPI().coreScheduler
     fun f() = task.callback()
-    return when {
+    task = when {
         delay > 0 -> {
             if (async) scheduler.runTaskLater(::f, delayS)
             else scheduler.runAsyncLater(::f, delayS)
@@ -60,6 +64,7 @@ fun schedule(async: Boolean = false,
         async -> scheduler.runAsync(::f)
         else -> scheduler.runTask(::f)
     }
+    return task
 }
 
 /*

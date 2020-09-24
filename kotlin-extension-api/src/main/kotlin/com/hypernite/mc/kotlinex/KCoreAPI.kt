@@ -11,4 +11,8 @@ interface KCoreAPI {
 
     fun <T> transaction(t: Transaction.() -> T): T
 
+    fun <T> asyncTransaction(t: Transaction.() -> T): AsyncInvoker<T>
+
+    val singlePoolEnabled: Boolean
+
 }

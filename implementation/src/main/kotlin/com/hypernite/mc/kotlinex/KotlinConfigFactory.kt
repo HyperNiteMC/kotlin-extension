@@ -2,7 +2,6 @@ package com.hypernite.mc.kotlinex
 
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.hypernite.mc.hnmc.core.config.ConfigFactory
-import com.hypernite.mc.hnmc.core.config.YamlHandler
 import com.hypernite.mc.hnmc.core.config.yaml.Configuration
 import com.hypernite.mc.hnmc.core.config.yaml.Resource
 import com.hypernite.mc.hnmc.core.managers.YamlManager
@@ -24,7 +23,9 @@ class KotlinConfigFactory(private val plugin: JavaPlugin) : ConfigFactory {
     }
 
     override fun dump(): YamlManager {
-        return object : YamlHandler(map, plugin, true, KotlinModule()) {}.also {
+        val construct = Class.forName("com.hypernite.mc.hnmc.core.config.YamlHandler").getConstructor(Map::class.java, JavaPlugin::class.java, Boolean::class.java, KotlinModule::class.java.superclass)
+        construct.isAccessible = true
+        return (construct.newInstance(map, plugin, true, KotlinModule()) as YamlManager).also {
             plugin.logger.info("正在初始化 yml (kotlin)")
             it.reloadConfigs()
         }
